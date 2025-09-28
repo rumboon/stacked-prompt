@@ -13,17 +13,6 @@ function stacked_prompt --description 'Write out the stacked prompt with tech, g
     # Start with a new line
     echo ""
 
-    # Start async battery info detection
-    _battery_stack_async
-
-    # Display battery info if available and below 50%
-    if set -q $_battery_stack_data
-        set -l battery_display "$$_battery_stack_data"
-        if test -n "$battery_display"
-            echo $battery_display
-        end
-    end
-
     # Check if we're in a git repository
     if command git --no-optional-locks rev-parse --git-dir >/dev/null 2>&1
         # Git controlled folder - use box format
@@ -40,50 +29,50 @@ function stacked_prompt --description 'Write out the stacked prompt with tech, g
             end
         end
 
-        # First line: folder path
-        echo -n $box_color"┌─ "$normal
-        if test -n "$folder_info"
-            echo $path_color$folder_info$normal
-        else
-            echo
-        end
-
         # Always run async functions
         _tech_stack_async
-
-        # Second line: git info
-        echo -n $box_color"├─ "$normal
         _git_stack_async
-        set -l branch_name (command git --no-optional-locks symbolic-ref --short HEAD 2>/dev/null || command git --no-optional-locks rev-parse --short HEAD 2>/dev/null)
-        echo -n $branch_color"$branch_name"$normal
 
-        if set -q $_git_stack_info
-            set -l git_status "$$_git_stack_info"
-            if test -n "$git_status"
-                echo -n " ($git_status)"
-            end
-        end
-        echo
+        # Get stack order and display
+        set -l stacks (string split ',' (set -q STACKED_PROMPT_ORDER; and echo $STACKED_PROMPT_ORDER; or echo "path,git,tech"))
 
-        # Third line: tech info (now the last line)
-        echo -n $box_color"└─ "$normal
-        echo -n $tech_color"tech: "$normal
-        if set -q $_tech_info_git
-            set -l tech_info "$$_tech_info_git"
-            if test -n "$tech_info"
-                echo $tech_info
+        for i in (seq (count $stacks))
+            set -l stack $stacks[$i]
+
+            # Box character based on position
+            set -l box_char
+            if test $i -eq 1
+                set box_char "┌─ "
+            else if test $i -eq (count $stacks)
+                set box_char "└─ "
             else
-                echo "not detected"
+                set box_char "├─ "
             end
-        else
-            echo "not detected"
+
+            echo -n $box_color$box_char$normal
+
+            # Display stack content
+            switch $stack
+                case "path"
+                    test -n "$folder_info"; and echo $path_color$folder_info$normal; or echo
+                case "git"
+                    set -l branch (command git --no-optional-locks symbolic-ref --short HEAD 2>/dev/null || command git --no-optional-locks rev-parse --short HEAD 2>/dev/null)
+                    set -l status_info (set -q $_git_stack_info; and test -n "$$_git_stack_info"; and echo " ($$_git_stack_info)")
+                    echo $branch_color$branch$normal$status_info
+                case "tech"
+                    set -l tech_info (set -q $_tech_info_git; and test -n "$$_tech_info_git"; and echo "$$_tech_info_git"; or echo "not detected")
+                    echo $tech_color"tech: "$normal$tech_info
+            end
         end
     else
         # Normal folder - simple format
         echo $path_color(prompt_pwd)$normal
     end
 
-    # Prompt indicator
+    # Start async battery info detection
+    _battery_stack_async
+
+    # Build the final prompt line
     set -l prompt_color
     if test $last_status -eq 0
         set prompt_color (set_color bryellow)
@@ -91,5 +80,15 @@ function stacked_prompt --description 'Write out the stacked prompt with tech, g
         set prompt_color (set_color brred)
     end
 
-    echo -n $prompt_color"❯ "$normal
+    # Combine battery info (if available) with prompt
+    set -l final_prompt ""
+    if set -q $_battery_stack_data
+        set -l battery_display "$$_battery_stack_data"
+        if test -n "$battery_display"
+            set final_prompt "$battery_display "
+        end
+    end
+    set final_prompt "$final_prompt$prompt_color❯ $normal"
+
+    echo -n $final_prompt
 end

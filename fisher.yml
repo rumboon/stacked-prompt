@@ -1,5 +1,5 @@
 name: stacked-prompt
-version: 1.0.0
+version: 1.1.0
 description: A modern, async Fish shell prompt with technology detection, battery status, and git information
 author: rumboon
 repository: https://github.com/rumboon/stacked-prompt

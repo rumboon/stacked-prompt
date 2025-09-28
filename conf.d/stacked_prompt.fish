@@ -25,3 +25,7 @@ end
 if not set -q STACKED_PROMPT_BOX_COLOR
     set -gx STACKED_PROMPT_BOX_COLOR brwhite
 end
+
+if not set -q STACKED_PROMPT_ORDER
+    set -gx STACKED_PROMPT_ORDER "path,git,tech"
+end
