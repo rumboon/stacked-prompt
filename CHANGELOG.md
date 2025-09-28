@@ -1,3 +1,10 @@
+## 1.0.0 (2025-09-28)
+
+### Features
+
+* Battery info added to the final prompt ([a474fdf](https://github.com/rumboon/stacked-prompt/commit/a474fdf0d294c81d90b03c6c207d404a561fa05b))
+* Release workflow ([687a119](https://github.com/rumboon/stacked-prompt/commit/687a11990dfb11314163c165e3243318303c05f7))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
