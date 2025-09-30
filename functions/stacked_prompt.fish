@@ -3,9 +3,11 @@ function stacked_prompt --description 'Write out the stacked prompt with tech, g
     set -l last_status $status
 
     # Colors (configurable via environment variables)
-    set -l path_color (set_color $STACKED_PROMPT_PATH_COLOR)
+    set -l path_root_color (set_color $STACKED_PROMPT_PATH_ROOT_COLOR)
+    set -l path_relative_color (set_color $STACKED_PROMPT_PATH_RELATIVE_COLOR)
     set -l branch_color (set_color $STACKED_PROMPT_BRANCH_COLOR)
-    set -l tech_color (set_color $STACKED_PROMPT_TECH_COLOR)
+    set -l tech_color_mods (set_color $STACKED_PROMPT_TECH_COLOR_MODS)
+    set -l tech_color_langs (set_color $STACKED_PROMPT_TECH_COLOR_LANGS)
     set -l battery_color (set_color $STACKED_PROMPT_BATTERY_COLOR)
     set -l box_color (set_color $STACKED_PROMPT_BOX_COLOR)
     set -l normal (set_color normal)
@@ -25,7 +27,7 @@ function stacked_prompt --description 'Write out the stacked prompt with tech, g
             if test -z "$relative_path"
                 set folder_info (basename $git_root)
             else
-                set folder_info (basename $git_root)(string replace -r "^/" "/" $relative_path)
+                set folder_info "$(basename $git_root)$normal $path_relative_color~$relative_path$normal"
             end
         end
 
@@ -34,7 +36,7 @@ function stacked_prompt --description 'Write out the stacked prompt with tech, g
         _git_stack_async
 
         # Get stack order and display
-        set -l stacks (string split ',' (set -q STACKED_PROMPT_ORDER; and echo $STACKED_PROMPT_ORDER; or echo "path,git,tech"))
+        set -l stacks (string split ',' $STACKED_PROMPT_ORDER)
 
         for i in (seq (count $stacks))
             set -l stack $stacks[$i]
@@ -53,20 +55,23 @@ function stacked_prompt --description 'Write out the stacked prompt with tech, g
 
             # Display stack content
             switch $stack
-                case "path"
-                    test -n "$folder_info"; and echo $path_color$folder_info$normal; or echo
-                case "git"
+                case path
+                    test -n "$folder_info"; and echo "$path_root_color$folder_info$normal"; or echo
+                case git
                     set -l branch (command git --no-optional-locks symbolic-ref --short HEAD 2>/dev/null || command git --no-optional-locks rev-parse --short HEAD 2>/dev/null)
                     set -l status_info (set -q $_git_stack_info; and test -n "$$_git_stack_info"; and echo " ($$_git_stack_info)")
-                    echo $branch_color$branch$normal$status_info
-                case "tech"
-                    set -l tech_info (set -q $_tech_info_git; and test -n "$$_tech_info_git"; and echo "$$_tech_info_git"; or echo "not detected")
-                    echo $tech_color"tech: "$normal$tech_info
+                    echo "$branch_color$branch$normal$status_info"
+                case tech_stack_langs
+                    set -l tech_info (set -q $_tech_stack_langs; and test -n "$$_tech_stack_langs"; and echo "$$_tech_stack_langs"; or echo "no langs detected")
+                    echo "$tech_color_langs$tech_info$normal"
+                case tech_stack_mods
+                    set -l tech_info (set -q $_tech_stack_mods; and test -n "$$_tech_stack_mods"; and echo "$$_tech_stack_mods"; or echo "no mods detected")
+                    echo "$tech_color_mods$tech_info$normal"
             end
         end
     else
         # Normal folder - simple format
-        echo $path_color(prompt_pwd)$normal
+        echo $path_root_color(prompt_pwd)$normal
     end
 
     # Start async battery info detection

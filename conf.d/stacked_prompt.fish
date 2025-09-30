@@ -6,16 +6,24 @@ set -g _stacked_prompt_initialized true
 
 # Set up default colors for the stacked prompt
 # These can be overridden by the user after installation
-if not set -q STACKED_PROMPT_PATH_COLOR
-    set -gx STACKED_PROMPT_PATH_COLOR brblue
+if not set -q STACKED_PROMPT_PATH_ROOT_COLOR
+    set -gx STACKED_PROMPT_PATH_ROOT_COLOR magenta
+end
+
+if not set -q STACKED_PROMPT_PATH_RELATIVE_COLOR
+    set -gx STACKED_PROMPT_PATH_RELATIVE_COLOR white
 end
 
 if not set -q STACKED_PROMPT_BRANCH_COLOR
-    set -gx STACKED_PROMPT_BRANCH_COLOR brgreen
+    set -gx STACKED_PROMPT_BRANCH_COLOR green
 end
 
-if not set -q STACKED_PROMPT_TECH_COLOR
-    set -gx STACKED_PROMPT_TECH_COLOR bryellow
+if not set -q STACKED_PROMPT_TECH_COLOR_MODS
+    set -gx STACKED_PROMPT_TECH_COLOR_MODS brblack
+end
+
+if not set -q STACKED_PROMPT_TECH_COLOR_LANGS
+    set -gx STACKED_PROMPT_TECH_COLOR_LANGS brblack
 end
 
 if not set -q STACKED_PROMPT_BATTERY_COLOR
@@ -23,9 +31,9 @@ if not set -q STACKED_PROMPT_BATTERY_COLOR
 end
 
 if not set -q STACKED_PROMPT_BOX_COLOR
-    set -gx STACKED_PROMPT_BOX_COLOR brwhite
+    set -gx STACKED_PROMPT_BOX_COLOR brblack
 end
 
 if not set -q STACKED_PROMPT_ORDER
-    set -gx STACKED_PROMPT_ORDER "path,git,tech"
+    set -gx STACKED_PROMPT_ORDER "path,git,tech_stack_langs,tech_stack_mods"
 end
